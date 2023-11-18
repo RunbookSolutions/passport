@@ -30,7 +30,7 @@ class ScopeRepository implements ScopeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getScopeEntityByIdentifier($identifier)
+    public function getScopeEntityByIdentifier($identifier): ?\League\OAuth2\Server\Entities\ScopeEntityInterface
     {
         if (Passport::hasScope($identifier)) {
             return new Scope($identifier);
@@ -42,7 +42,7 @@ class ScopeRepository implements ScopeRepositoryInterface
      */
     public function finalizeScopes(
         array $scopes, $grantType,
-        ClientEntityInterface $clientEntity, $userIdentifier = null)
+        ClientEntityInterface $clientEntity, $userIdentifier = null, $authCodeId = null): array
     {
         if (! in_array($grantType, ['password', 'personal_access', 'client_credentials'])) {
             $scopes = collect($scopes)->reject(function ($scope) {

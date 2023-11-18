@@ -40,7 +40,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getNewRefreshToken()
+    public function getNewRefreshToken(): ?\League\OAuth2\Server\Entities\RefreshTokenEntityInterface
     {
         return new RefreshToken;
     }
@@ -48,7 +48,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity)
+    public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity): void
     {
         $this->refreshTokenRepository->create([
             'id' => $id = $refreshTokenEntity->getIdentifier(),
@@ -63,7 +63,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function revokeRefreshToken($tokenId)
+    public function revokeRefreshToken($tokenId): void
     {
         $this->refreshTokenRepository->revokeRefreshToken($tokenId);
     }
@@ -71,7 +71,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function isRefreshTokenRevoked($tokenId)
+    public function isRefreshTokenRevoked($tokenId): bool
     {
         return $this->refreshTokenRepository->isRefreshTokenRevoked($tokenId);
     }

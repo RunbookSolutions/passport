@@ -30,7 +30,7 @@ class UserRepository implements UserRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity)
+    public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): ?\League\OAuth2\Server\Entities\UserEntityInterface
     {
         $provider = $clientEntity->provider ?: config('auth.guards.api.provider');
 
@@ -42,7 +42,7 @@ class UserRepository implements UserRepositoryInterface
             $user = (new $model)->findAndValidateForPassport($username, $password);
 
             if (! $user) {
-                return;
+                return null;
             }
 
             return new User($user->getAuthIdentifier());
@@ -55,13 +55,13 @@ class UserRepository implements UserRepositoryInterface
         }
 
         if (! $user) {
-            return;
+            return null;
         } elseif (method_exists($user, 'validateForPassportPasswordGrant')) {
             if (! $user->validateForPassportPasswordGrant($password)) {
-                return;
+                return null;
             }
         } elseif (! $this->hasher->check($password, $user->getAuthPassword())) {
-            return;
+            return null;
         }
 
         return new User($user->getAuthIdentifier());
