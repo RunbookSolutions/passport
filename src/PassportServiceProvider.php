@@ -23,6 +23,7 @@ use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\DeviceCodeGrant;
 use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
@@ -181,6 +182,10 @@ class PassportServiceProvider extends ServiceProvider
                     new ClientCredentialsGrant, Passport::tokensExpireIn()
                 );
 
+                $server->enableGrantType(
+                    $this->makeDeviceCodeGrant(), Passport::tokensExpireIn()
+                );
+
                 if (Passport::$implicitGrantEnabled) {
                     $server->enableGrantType(
                         $this->makeImplicitGrant(), Passport::tokensExpireIn()
@@ -241,6 +246,26 @@ class PassportServiceProvider extends ServiceProvider
             $this->app->make(Bridge\UserRepository::class),
             $this->app->make(Bridge\RefreshTokenRepository::class)
         );
+
+        $grant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+        return $grant;
+    }
+
+    /**
+     * Create and configure a Device Code grant instance.
+     *
+     * @return \League\OAuth2\Server\Grant\DeviceCodeGrant
+     */
+    protected function makeDeviceCodeGrant()
+    {
+        $grant = new DeviceCodeGrant(
+            $this->app->make(Bridge\DeviceCodeRepository::class),
+            $this->app->make(Bridge\RefreshTokenRepository::class),
+            new DateInterval('PT10M')
+        );
+
+        $grant->setVerificationUri(url(Passport::$deviceCodeVerificationUri));
 
         $grant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
 
