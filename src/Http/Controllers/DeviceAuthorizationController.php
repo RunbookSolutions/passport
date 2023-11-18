@@ -4,7 +4,8 @@ namespace Laravel\Passport\Http\Controllers;
 
 use League\OAuth2\Server\AuthorizationServer;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response as Psr7Response;
+use Illuminate\Http\Request;
+use Nyholm\Psr7\Response as Psr7Response;
 
 class DeviceAuthorizationController
 {
@@ -29,19 +30,32 @@ class DeviceAuthorizationController
     }
 
     /**
-     * Authorize a client to access the user's account.
+     * Issue a device its device codes.
      *
-     * @param  \Psr\Http\Message\ServerRequestInterface  $psrRequest
+     * @param  \Psr\Http\Message\ServerRequestInterface  $request
      * @return \Illuminate\Http\Response
      */
-    public function authorize(ServerRequestInterface $psrRequest)
+    public function issueDeviceCode(ServerRequestInterface $request)
     {
-        $deviceAuthRequest = $this->withErrorHandling(function () use ($psrRequest) {
-            return $this->server->validateDeviceAuthorizationRequest($psrRequest);
+        return $this->withErrorHandling(function () use ($request) {
+            return $this->convertResponse(
+                $this->server->respondToDeviceAuthorizationRequest($request, new Psr7Response)
+            );
         });
+    }
 
-        return $this->convertResponse(
-            $this->server->completeDeviceAuthorizationRequest($deviceAuthRequest, new Psr7Response)
-        );
+    /**
+     * Authorize a client to access the user's account.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function authorize(Request $request)
+    {
+        return $this->withErrorHandling(function () use ($request) {
+            return $this->convertResponse(
+                $this->server->completeDeviceAuthorizationRequest($request->get('code'), $request->get('user_id'), true)
+            );
+        });
     }
 }

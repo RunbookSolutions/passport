@@ -48,7 +48,7 @@ class Client implements ClientEntityInterface
      *
      * @return string
      */
-    public function getIdentifier()
+    public function getIdentifier(): string
     {
         return (string) $this->identifier;
     }
@@ -59,7 +59,7 @@ class Client implements ClientEntityInterface
      * @param  string  $identifier
      * @return void
      */
-    public function setIdentifier($identifier)
+    public function setIdentifier($identifier): void
     {
         $this->identifier = $identifier;
     }

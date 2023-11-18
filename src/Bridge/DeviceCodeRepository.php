@@ -2,7 +2,9 @@
 
 namespace Laravel\Passport\Bridge;
 
+use DateTimeImmutable;
 use Laravel\Passport\Passport;
+use Laravel\Passport\Bridge\Client;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\DeviceCodeEntityInterface;
 use League\OAuth2\Server\Repositories\DeviceCodeRepositoryInterface;
@@ -14,7 +16,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getNewDeviceCode()
+    public function getNewDeviceCode(): DeviceCodeEntityInterface
     {
         return new DeviceCode();
     }
@@ -22,10 +24,10 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function persistNewDeviceCode(DeviceCodeEntityInterface $deviceCodeEntity)
+    public function persistDeviceCode(DeviceCodeEntityInterface $deviceCodeEntity): void
     {
         $attributes = [
-            'id' => $deviceCodeEntity->getIdentifier(),
+            //'id' => $deviceCodeEntity->getIdentifier(),
             'user_code' => $deviceCodeEntity->getUserCode(),
             'client_id' => $deviceCodeEntity->getClient()->getIdentifier(),
             'scopes' => $this->formatScopesForStorage($deviceCodeEntity->getScopes()),
@@ -33,29 +35,38 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
             'expires_at' => $deviceCodeEntity->getExpiryDateTime(),
         ];
 
-        Passport::deviceCode()->setRawAttributes($attributes)->save();
+        Passport::deviceCode()->updateOrCreate(
+            ['id' => $deviceCodeEntity->getIdentifier()],
+            $attributes
+        );
+        //setRawAttributes($attributes)->save();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getDeviceCodeEntityByDeviceCode($codeId, $grantType, ClientEntityInterface $clientEntity)
+    public function getDeviceCodeEntityByDeviceCode(string $deviceCode): ?DeviceCodeEntityInterface
     {
-        $record = Passport::deviceCode()->where('id', $codeId)->first();
+        $record = Passport::deviceCode()->where('user_code', $deviceCode)->first();
 
         if (!$record) {
-            return;
+            return null;
         }
 
         $deviceCode = new DeviceCode();
         $deviceCode->setIdentifier($record->id);
         $deviceCode->setUserCode($record->user_code);
 
-        foreach ($record->scopes as $scope) {
+        foreach (json_decode($record->scopes) as $scope) {
             $deviceCode->addScope($scope);
         }
 
-        $deviceCode->setClient($clientEntity);
+        //($identifier, $name, $redirectUri, $isConfidential = false, $provider = null)
+        $client = new Client($record->client->id, $record->client->name, $record->client->redirect, $record->client->confidential());
+        $deviceCode->setClient($client);
+
+        //setExpiryDateTime(DateTimeImmutable $dateTime)
+        $deviceCode->setExpiryDateTime(new DateTimeImmutable($record->expires_at));
 
         $deviceCode->setUserIdentifier($record->user_id);
 
@@ -65,7 +76,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function revokeDeviceCode($codeId)
+    public function revokeDeviceCode($codeId): void
     {
         Passport::deviceCode()->where('id', $codeId)->update(['revoked' => true]);
     }
@@ -73,7 +84,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function isDeviceCodeRevoked($codeId)
+    public function isDeviceCodeRevoked($codeId): bool
     {
         return Passport::deviceCode()->where('id', $codeId)->where('revoked', 1)->exists();
     }

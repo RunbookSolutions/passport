@@ -14,6 +14,12 @@ Route::get('/authorize', [
     'middleware' => 'web',
 ]);
 
+Route::post('/device/code', [
+    'uses' => 'DeviceAuthorizationController@issueDeviceCode',
+    'as' => 'passport.device.code',
+    'middleware' => 'throttle',
+]);
+
 Route::post('/device_authorization', [
     'uses' => 'DeviceAuthorizationController@authorize',
     'as' => 'passport.authorizations.authorize_device',
