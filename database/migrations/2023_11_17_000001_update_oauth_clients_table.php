@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (if (Schema::hasTable('oauth_auth_codes')) {
-            Schema::table('oauth_auth_codes', function (Blueprint $table) {
+        if (Schema::hasTable('oauth_clients')) {
+            Schema::table('oauth_clients', function (Blueprint $table) {
                 $table->boolean('device_client')->default(FALSE);
             });
             
-        })
+        }
     }
 
     /**
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('oauth_auth_codes', function (Blueprint $table) {
+        Schema::table('oauth_clients', function (Blueprint $table) {
             $table->dropColumn('device_client');
         });
     }
