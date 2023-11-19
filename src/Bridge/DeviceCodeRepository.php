@@ -29,6 +29,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
         $attributes = [
             //'id' => $deviceCodeEntity->getIdentifier(),
             'user_code' => $deviceCodeEntity->getUserCode(),
+            'user_id' => $deviceCodeEntity->getUserIdentifier(),
             'client_id' => $deviceCodeEntity->getClient()->getIdentifier(),
             'scopes' => $this->formatScopesForStorage($deviceCodeEntity->getScopes()),
             'revoked' => false,
@@ -47,7 +48,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
      */
     public function getDeviceCodeEntityByDeviceCode(string $deviceCode): ?DeviceCodeEntityInterface
     {
-        $record = Passport::deviceCode()->where('user_code', $deviceCode)->first();
+        $record = Passport::deviceCode()->where('id', $deviceCode)->first();
 
         if (!$record) {
             return null;
@@ -69,6 +70,8 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
         $deviceCode->setExpiryDateTime(new DateTimeImmutable($record->expires_at));
 
         $deviceCode->setUserIdentifier($record->user_id);
+
+        $deviceCode->setUserApproved(!$record->revoked);
 
         return $deviceCode;
     }

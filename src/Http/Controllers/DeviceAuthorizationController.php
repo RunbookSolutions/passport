@@ -53,9 +53,7 @@ class DeviceAuthorizationController
     public function authorize(Request $request)
     {
         return $this->withErrorHandling(function () use ($request) {
-            return $this->convertResponse(
-                $this->server->completeDeviceAuthorizationRequest($request->get('code'), $request->get('user_id'), true)
-            );
+            $this->server->completeDeviceAuthorizationRequest($request->get('code'), $request->get('user_id'), true);
         });
     }
 }
