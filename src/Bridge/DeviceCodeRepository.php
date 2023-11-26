@@ -48,7 +48,7 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
      */
     public function getDeviceCodeEntityByDeviceCode(string $deviceCode): ?DeviceCodeEntityInterface
     {
-        $record = Passport::deviceCode()->where('id', $deviceCode)->first();
+        $record = Passport::deviceCode()->where('id', $deviceCode)->orWhere('user_code', $deviceCode)->first();
 
         if (!$record) {
             return null;
