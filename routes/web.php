@@ -20,7 +20,7 @@ Route::post('/device/code', [
     'middleware' => 'throttle',
 ]);
 
-Route::post('/device_authorization', [
+Route::post('/device/authorize', [
     'uses' => 'DeviceAuthorizationController@authorize',
     'as' => 'passport.authorizations.authorize_device',
     'middleware' => 'throttle',
