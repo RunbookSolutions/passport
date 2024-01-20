@@ -69,7 +69,8 @@ class DeviceCodeRepository implements DeviceCodeRepositoryInterface
         //setExpiryDateTime(DateTimeImmutable $dateTime)
         $deviceCode->setExpiryDateTime(new DateTimeImmutable($record->expires_at));
 
-        $deviceCode->setUserIdentifier($record->user_id);
+        if($record->user_id)
+            $deviceCode->setUserIdentifier($record->user_id);
 
         $deviceCode->setUserApproved(!$record->revoked);
 
